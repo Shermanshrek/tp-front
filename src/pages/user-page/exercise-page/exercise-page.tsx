@@ -70,7 +70,7 @@ const exercisePage: FC = () => {
     
     const fetchData = async (id: number) => {
         try {
-            const response = await axios.get<ResponseExercise>(`http://localhost:8080/do-exercise/${id}`);
+            const response = await axios.get<ResponseExercise>(`http://localhost:8080/user/do-exercise/${id}`);
             const ex: ResponseExercise = {
                 id: response.data.id, 
                 doTime: response.data.doTime,
@@ -85,7 +85,7 @@ const exercisePage: FC = () => {
             navigate(`/user/${login}/exercises/${id}`, {state:{ex}, replace: false})
         }catch (err){
             setError('Ошибка при получении данных.'); // Устанавливаем сообщение об ошибке
-            setResponseEx(null); // Сбрасываем данные
+            //setResponseEx(null); // Сбрасываем данные
             console.log(err);
         }
     }

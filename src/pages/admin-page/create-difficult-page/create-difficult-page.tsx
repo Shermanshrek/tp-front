@@ -133,7 +133,11 @@ async function save(navigate: NavigateFunction, title: string, minLen: number, m
     }
     console.log(difficult);
     try{
-        const response = await instance.post("/admin/create-difficult", difficult);
+        //const response = await instance.post("/admin/create-difficult", difficult);
+        const response = await axios.post("http://localhost:8080/admin/create-difficult", difficult, { headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token'),
+          'Content-Type': 'application/json'
+        }})
         console.log("POST RESPONSE: ", response.data);
     }catch(err){
         console.log("POST ERROR DIFFICULT! ", err);
