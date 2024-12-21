@@ -1,0 +1,13 @@
+.txt{
+    text-align: center;
+}
+.area-h-w{
+    width: 70%;
+    padding: 5px;
+}
+
+.sel{
+    /*select class*/
+    width: 203px;
+    height: 40px;
+}
