@@ -109,7 +109,6 @@ const adminExercisesPage: FC = () => {
                             value={selectedDifficulty}
                             onChange={handleDifficultyChange} // Обработчик изменения
                             className={'border-2 border-black sel'}>
-                        {/* * TODO цеплять уровни сложности с сервера и выводить их сюда */}
                         <option value={''}></option>
                         {difficultList}
                     </select>
