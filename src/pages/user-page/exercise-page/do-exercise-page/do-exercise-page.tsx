@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useRef, useState} from 'react';
+import React, {Dispatch, FC, SetStateAction, useEffect, useRef, useState} from 'react';
 import './do-exercise.css'
 import {NavigateFunction, useLocation, useNavigate, useParams} from "react-router-dom";
 import { ResponseExercise } from '../exercise-page';
@@ -12,11 +12,19 @@ const keyboardLayout = [
     ['Ctrl', 'Win', 'Alt', ' ', 'Alt', 'Win', 'Ctrl']
 ];
 
-const VirtualKeyboard = (props: {visibleKeyBoard:boolean, exercise_text: string}) => {
-    // * TODO получать упражнение с сервера
+// const [symbols, setSymbols] = useState(0);
+interface Props{
+    visibleKeyBoard:boolean,
+    exercise_text: string,
+    onSymbolCountChange: Dispatch<SetStateAction<number>>,
+    onMistakesCountChange:Dispatch<SetStateAction<number>>,
+    mistakes: number,
+    maxErrors: number
+}
+
+const VirtualKeyboard = (props: Props) => {
     const [inputValue, setInputValue] = useState(props.exercise_text);
     const [nextCharIndex, setNextCharIndex] = useState(0);
-
     const handleChange = (e) => {
         setNextCharIndex(e.target.innerText.length); // Обновляем индекс следующего символа
     };
@@ -34,6 +42,17 @@ const VirtualKeyboard = (props: {visibleKeyBoard:boolean, exercise_text: string}
                 // Удаляем первый символ из inputValue
                 setInputValue((prev) => prev.slice(1));
                 setNextCharIndex(nextCharIndex - 1); // Обновляем индекс
+                props.onSymbolCountChange((prev: number) => prev + 1);
+            }
+            else{
+                props.onMistakesCountChange(prev => prev+1);
+            }
+            if (nextCharIndex + 1 >= props.exercise_text.length) {
+                alert("Упражнение завершено! Вы ввели все символы.");
+                // Здесь можно сбросить состояние или выполнить другие действия
+            } else if (props.maxErrors && props.onErrorCountChange >= props.maxErrors) {
+                alert("Упражнение завершено! Вы допустили слишком много ошибок.");
+                // Здесь можно сбросить состояние или выполнить другие действия
             }
         };
         // Добавляем обработчик события нажатия клавиш
@@ -43,7 +62,7 @@ const VirtualKeyboard = (props: {visibleKeyBoard:boolean, exercise_text: string}
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [nextChar, nextCharIndex]); // Зависимости для эффекта
+    }, [nextChar, nextCharIndex, props]); // Зависимости для эффекта
 
 
     return (
@@ -108,8 +127,12 @@ const doExercise: FC = () => {
     const location = useLocation();
     const ex: ResponseExercise = location.state?.ex;
     const [seconds, setSeconds] = useState<number>(0);
+    const [symbols, setSymbols] = useState(0);
+    const [mistakes, setMistakes] = useState<number>(0);
     const [isActive, setIsActive] = useState<boolean>(true);
+
     const [showPopup, setShowPopup] = useState(false);
+    const [pausePopup, setPausePopup] = useState(false);
     const secondsRef = useRef(seconds); // Используем useRef для хранения текущих секунд
     // console.log("DO EXERCISE OBJECT: ", ex);
 
@@ -144,6 +167,7 @@ const doExercise: FC = () => {
     // Функция для запуска таймера
     const changeTimer = () => {
         setIsActive(!isActive);
+        setPausePopup(!pausePopup);
     };
 
 
@@ -161,6 +185,19 @@ const doExercise: FC = () => {
         setShowPopup(false); // Закрыть всплывающее окно
         navigate(-1);
     };
+    const handleClosePopup2 = () => {
+        setIsActive(true);
+        setPausePopup(false); // Закрыть всплывающее окно
+        // navigate(-1);
+    };
+    const p: Props = {
+        visibleKeyBoard: checked,
+        maxErrors: ex.errors,
+        exercise_text: ex.exerciseText,
+        onSymbolCountChange: setSymbols,
+        onMistakesCountChange: setMistakes
+
+    }
 
 
     return (
@@ -171,6 +208,7 @@ const doExercise: FC = () => {
                     <button onClick={() => changeTimer()}
                             className="bg-gray-400 hover:bg-gray-500 text-white btn aspect-square">
                         {isActive ? 'Пауза' : 'Старт'}
+
                     </button>
                     {/*navigate(`/user/${login}/exercises`, {state:{username: login}, replace:true})*/}
                     <button onClick={() => navigate(-1)}
@@ -181,10 +219,10 @@ const doExercise: FC = () => {
 
                 <div className="flex gap-4 text-sm space-x-10 ml-5">
                     {/* Количество набранных символов? */}
-                    <span  className={'text-xl'}>Количество символов: </span>
-                    <span className={'text-xl'}>Средняя скорость:</span>
+                    <span  className={'text-xl'}>Количество символов: {symbols}/{ex.exerciseText.length}</span>
+                    <span className={'text-xl'}>Средняя скорость: x</span>
                     <span className={'text-xl'}>Время: {seconds}/{ex.doTime}</span>
-                    <span className={'text-xl'}>Ошибки: .../ {ex.errors}</span>
+                    <span className={'text-xl'}>Ошибки: {mistakes}/{ex.errors}</span>
                 </div>
                 <div className={'flex'}>
                     <input id={'checkbox-keyboard'} defaultChecked={true} onClick={() => {
@@ -194,16 +232,15 @@ const doExercise: FC = () => {
                     <label htmlFor={'checkbox-keyboard'} className={"ml-2 text-xl"}>Виртуальная клавиатура</label>
 
                 </div>
-
             </div>
+            {pausePopup && <Popup message='Пауза!' onClose={handleClosePopup2}/> }
             {showPopup && <Popup message='Время вышло!' onClose={handleClosePopup}/>}
-
 
             {/* Virtual Keyboard */}
             <div className="flex flex-col items-center w-full">
                 <div className="w-full bg-gray-100 border border-gray-300 p-2 text-center text-sm overflow-auto mb-4">
                     <div className={''}>
-                    <VirtualKeyboard visibleKeyBoard={checked} exercise_text={ex.exerciseText}/>
+                        <VirtualKeyboard visibleKeyBoard={p.visibleKeyBoard} exercise_text={ex.exerciseText} maxErrors={ex.errors} onSymbolCountChange={setSymbols} onMistakesCountChange={setMistakes}/>
                     </div>
                 </div>
             </div>
