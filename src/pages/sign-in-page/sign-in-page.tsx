@@ -2,7 +2,9 @@ import {FC, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import '../registration-page/registration-page.tsx'
 import axios from "axios";
-import {jwtDecode} from "jwt-decode";
+import {jwtDecode, JwtHeader} from "jwt-decode";
+import AuthService from "../../api.auth";
+import {instance} from "../../api.config.ts";
 
 
 interface UserSignIn{
@@ -18,10 +20,17 @@ const signIn: FC = ()=>{
         const user:UserSignIn = {username: login, password: password}
         console.log("SIGN IN USER",user);
         try {
-            const response = await axios.post('http://localhost:8080/auth/sign-in', user);
-            const decoded = jwtDecode(response.data.token);
-            // const jsonDecoded = JSON.parse();
-            // console.log(jsonDecoded);
+            const resp = await axios.post("http://localhost:8080/auth/sign-in", user);
+            const token = window.localStorage.getItem("token")
+            let decoded: JwtHeader
+            console.log(token)
+            if(token !== null){
+                decoded = jwtDecode(token)
+            }
+            else{
+                decoded = jwtDecode(resp.data.token)
+                window.localStorage.setItem("token", resp.data.token);
+            }
             console.log("TOKEN SIGN IN: ", decoded);
             if(decoded.role === "ROLE_USER"){
                 const login = decoded.sub

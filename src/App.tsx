@@ -19,36 +19,40 @@ import StatisticPage from "./pages/user-page/statistic-page/statistic-page.tsx";
 import UsersPage from "./pages/admin-page/users-page/users-page.tsx";
 import AdminExercisesPage from "./pages/admin-page/exercises-page/admin-exercises-page.tsx";
 import AdminStatisticPage from "./pages/admin-page/statistic-page/admin-statistic-page.tsx";
+import AuthStore  from "./store.ts";
+import PrivateRoute from "./privateRoute.tsx";
+import {observer} from "mobx-react-lite";
 
-function App() {
+const App = observer(() => {
+
     const location = useLocation();
     useEffect(() => {
-        console.log('Current location is ', location);
-    }, [location]);
+        AuthStore.checkAuth();
+    }, []);
 
     return(
         <Routes>
-            <Route path={'/'} element={<StartPage isLoggedIn={false}/>}/>
+            <Route path={'/'} element={<StartPage/>}/>
             <Route path={'about'} element={<About/>}/>
             <Route path={'/sign-in'} element={<SignInPage/>}/>
             <Route path={'/registration'} element={<Registration/>}/>
 
-            <Route path={'/admin'} element={<AdminPage/>}/>
-            <Route path={'/admin/create-difficult'} element={<CreateDifficultPage/>}/>
-            <Route path={'/admin/create-exercise'} element={<CreateExercisePage/>}/>
-            <Route path={'/admin/exercises'} element={<AdminExercisesPage/>}/>
-            <Route path={'/admin/users'} element={<UsersPage/>}/>
-            <Route path={'/admin/statistic'} element={<AdminStatisticPage/>}/>
-            <Route path={'/admin/exercises/:id'} element={<DoExercisePage/>}/>
+            <Route path={'/admin'} element={<PrivateRoute page={<AdminPage/>}/> }/>
+            <Route path={'/admin/create-difficult'} element={<PrivateRoute page={<CreateDifficultPage/>}/>}/>
+            <Route path={'/admin/create-exercise'} element={<PrivateRoute page={<CreateExercisePage/>}/> }/>
+            <Route path={'/admin/exercises'} element={<PrivateRoute page={<AdminExercisesPage/>}/>}/>
+            <Route path={'/admin/users'} element={<PrivateRoute page={<UsersPage/>}/>}/>
+            <Route path={'/admin/statistic'} element={<PrivateRoute page={<AdminStatisticPage/>}/> }/>
+            <Route path={'/admin/exercises/:id'} element={<PrivateRoute page={<DoExercisePage/>}/>}/>
 
-            <Route path={`/user/:login`} element={<UserPage/>}/>
-            <Route path={`/user/:login/exercises`} element={<ExercisePage/>}/>
-            <Route path={`/user/:login/statistic`} element={<StatisticPage/>}/>
-            <Route path={`/user/:login/exercises/:id`} element={<DoExercisePage/>}/>
+            <Route path={`user/:login`} element={<PrivateRoute page={<UserPage/>}/>}/>
+            <Route path={`user/:login/exercises`} element={<PrivateRoute page={<ExercisePage/>}/>}/>
+            <Route path={`user/:login/statistic`} element={<PrivateRoute page={<StatisticPage/>}/>}/>
+            <Route path={`user/:login/exercises/:id`} element={<PrivateRoute page={<DoExercisePage/>}/>}/>
 
             <Route path={'*'} element={<NotFoundPage/>}/>
         </Routes>
     );
-}
+})
 
 export default App

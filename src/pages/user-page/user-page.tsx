@@ -1,13 +1,14 @@
-import {FC} from "react";
-import {useLocation, useNavigate, useParams} from "react-router-dom";
+import {FC, useEffect} from "react";
+import {Outlet, useLocation, useNavigate, useParams} from "react-router-dom";
 import './user.css'
+import {instance} from "../../api.config.ts";
 
 
 const UserPage: FC = () =>{
     // * TODO Добавить проверку на то, что пользователь авторизован(показываем страницу, только авторизованным пользователям, иначе кидаем 403 ошибку
     const navigate = useNavigate();
     const {login: login } = useParams(); // Извлечение данных из состояния
-    console.log(login);
+
     return(
         <div className="bg-gray-200 justify-items-center min-h-screen p-4">
             <div className="bg-white p-8 aspect-square shadow-md h-w-user">
@@ -23,6 +24,7 @@ const UserPage: FC = () =>{
                     </button>
                     <button className="bg-gray-300 px-8 py-2">Справка</button>
                 </div>
+                <Outlet/>
             </div>
         </div>
     );
