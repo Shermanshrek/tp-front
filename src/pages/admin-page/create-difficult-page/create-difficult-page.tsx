@@ -62,8 +62,11 @@ const createDifficult:FC = () => {
         console.log(difficult);
         if(errs.length === 0){
             try{
-                const response = await instance.post("/admin/create-difficult", difficult);
-                console.log("POST RESPONSE: ", response.data);
+                const response = await axios.post("http://localhost:8080/admin/create-difficult", difficult, { headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
+                }})
+                console.log("POST RESPONSE: ", response.data);                console.log("POST RESPONSE: ", response.data);
             }catch(err){
                 console.log("POST ERROR DIFFICULT! ", err);
             }
