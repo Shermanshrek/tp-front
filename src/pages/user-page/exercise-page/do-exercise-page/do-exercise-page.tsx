@@ -2,6 +2,8 @@ import React, {Dispatch, FC, SetStateAction, useEffect, useRef, useState} from '
 import './do-exercise.css'
 import {NavigateFunction, useLocation, useNavigate, useParams} from "react-router-dom";
 import { ResponseExercise } from '../exercise-page';
+import {Stats} from "./stats.ts";
+import axios from "axios";
 
 
 const keyboardLayout = [
@@ -20,7 +22,9 @@ interface Props{
     onMistakesCountChange:Dispatch<SetStateAction<number>>,
     mistakes: number,
     maxErrors: number,
-    symbols: number
+    symbols: number,
+    navigate: NavigateFunction,
+    sendStats: () => Promise<void>
 }
 
 const VirtualKeyboard = (props: Props) => {
@@ -37,6 +41,8 @@ const VirtualKeyboard = (props: Props) => {
     };
     const handleClosePopup = (func: Dispatch<SetStateAction<boolean>>) => {
         func(false);
+        props.sendStats();
+        props.navigate(-1);
     }
     const nextChar = getNextChar();
     useEffect(() => {
@@ -59,11 +65,10 @@ const VirtualKeyboard = (props: Props) => {
             }
 
         };
-        if (props.symbols >= props.exercise_text.length) {
+        if (props.symbols > props.exercise_text.length) {
             setWin(true);
             // Здесь можно сбросить состояние или выполнить другие действия
         } else if (props.mistakes > props.maxErrors) {
-            // props.maxErrors - 1 так как при нуле не работает(выдает попап при 2 ошибках).
             setMistakes(true);
             // Здесь можно сбросить состояние или выполнить другие действия
         }
@@ -143,6 +148,7 @@ const doExercise: FC = () => {
     const [seconds, setSeconds] = useState<number>(0);
     const [symbols, setSymbols] = useState(1);
     const [mistakes, setMistakes] = useState<number>(0);
+    const [meanSpeed, setMeanSpeed] = useState(0);
     const [isActive, setIsActive] = useState<boolean>(true);
 
     const [showPopup, setShowPopup] = useState(false);
@@ -160,6 +166,8 @@ const doExercise: FC = () => {
                     secondsRef.current = prevSeconds + 1; // Обновляем значение в useRef
                     return secondsRef.current;
                 });
+                setMeanSpeed(() => symbols / secondsRef.current)
+
             }, 1000);
         }
         // Очистка интервала при размонтировании или остановке таймера
@@ -194,16 +202,49 @@ const doExercise: FC = () => {
             exerciseText: string,
             errors: number
         }
-    */ 
+    */
+    //Для проигрыша по времени
     const handleClosePopup = () => {
         setShowPopup(false); // Закрыть всплывающее окно
+        sendStats();
         navigate(-1);
     };
+    //Для паузы
     const handleClosePopup2 = () => {
         setIsActive(true);
         setPausePopup(false); // Закрыть всплывающее окно
+
+
         // navigate(-1);
     };
+    const sendStats = async () => {
+        const stats = collectStats();
+        if(stats !== undefined){
+            try {
+                const response = await axios.post<Stats>('http://localhost:8080/user/save-exercise-stat', stats);
+                console.log(response.data);
+            }catch (err){
+                console.log("SEND STATS ERROR\n", err);
+            }
+        }
+    }
+    const collectStats: Stats | undefined = (): Stats | undefined => {
+        if(login !== undefined){
+            const stat: Stats = {
+                username: login,
+                exerciseId: id_exercise,
+                exerciseName: ex.exerciseName,
+                errors: mistakes,
+                date: new Date().toLocaleDateString(),
+                doTime: seconds,
+                meanSpeed: meanSpeed
+            }
+            return stat
+        }
+        return undefined;
+
+    }
+
     const p: Props = {
         visibleKeyBoard: checked,
         maxErrors: ex.errors,
@@ -212,8 +253,6 @@ const doExercise: FC = () => {
         onMistakesCountChange: setMistakes
 
     }
-
-
     return (
         <div className="flex flex-col items-center p-6 bg-gray-200 min-h-screen">
             {/* Header */}
@@ -234,7 +273,7 @@ const doExercise: FC = () => {
                 <div className="flex gap-4 text-sm space-x-10 ml-5">
                     {/* Количество набранных символов? */}
                     <span  className={'text-xl'}>Количество символов: {symbols - 1}/{ex.exerciseText.length}</span>
-                    <span className={'text-xl'}>Средняя скорость: x</span>
+                    <span className={'text-xl'}>Средняя скорость: {meanSpeed.toFixed(2)}</span>
                     <span className={'text-xl'}>Время: {seconds}/{ex.doTime}</span>
                     <span className={'text-xl'}>Ошибки: {mistakes}/{ex.errors}</span>
                 </div>
@@ -244,7 +283,6 @@ const doExercise: FC = () => {
                         console.log(checked);
                     }} type={'checkbox'} className={"mt-1 ml-5 size-5"}/>
                     <label htmlFor={'checkbox-keyboard'} className={"ml-2 text-xl"}>Виртуальная клавиатура</label>
-
                 </div>
             </div>
             {pausePopup && <Popup message='Пауза!' onClose={handleClosePopup2}/> }
@@ -260,6 +298,8 @@ const doExercise: FC = () => {
                                          onSymbolCountChange={setSymbols}
                                          onMistakesCountChange={setMistakes}
                                          mistakes={mistakes}
+                                         navigate={navigate}
+                                         sendStats={sendStats}
                                          symbols={symbols}/>
                     </div>
                 </div>

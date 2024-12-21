@@ -37,7 +37,7 @@ const adminExercisesPage: FC = () => {
     const fetchData = async (id: number) => {
         try {
             // const response = await axios.get<ResponseExercise>(`http://localhost:8080/do-exercise/${id}`);
-            const response = await axios.post(`http://localhost:8080/admin/do-exercise/${id}`, { headers: {
+            const response = await axios.get(`http://localhost:8080/admin/do-exercise/${id}`, { headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem('token'),
                     'Content-Type': 'application/json'
                 }})
