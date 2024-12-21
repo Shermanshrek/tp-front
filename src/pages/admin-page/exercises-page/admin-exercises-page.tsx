@@ -2,7 +2,7 @@ import {FC, useState, useEffect} from "react";
 import './admin-exercises.css'
 import {useLocation, useNavigate} from "react-router-dom";
 import { ResponseExercise } from "../../user-page/exercise-page/exercise-page";
-import { ResponseDifficulty } from "../../admin-page/create-exercise-page/create-exercise-page";
+import { ResponseDifficulty } from "../create-exercise-page/create-exercise-page.tsx";
 import axios from 'axios'
 
 interface Exercise{
@@ -36,7 +36,11 @@ const adminExercisesPage: FC = () => {
 
     const fetchData = async (id: number) => {
         try {
-            const response = await axios.get<ResponseExercise>(`http://localhost:8080/do-exercise/${id}`);
+            // const response = await axios.get<ResponseExercise>(`http://localhost:8080/do-exercise/${id}`);
+            const response = await axios.post(`http://localhost:8080/admin/do-exercise/${id}`, { headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                }})
             const ex: ResponseExercise = {
                 id: response.data.id, 
                 doTime: response.data.doTime,
@@ -72,7 +76,11 @@ const adminExercisesPage: FC = () => {
         </li>)
     const deleteExercise = async (id: number) => {
         try {
-            const response = await axios.delete(`http://localhost:8080/admin/exercises/${id}`);
+            // const response = await axios.delete(`http://localhost:8080/admin/exercises/${id}`);
+            const response = await axios.delete(`http://localhost:8080/admin/exercises/${id}`, { headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                }})
             console.log(response.data);
 
             // Обновляем состояние, убирая удаленное упражнение

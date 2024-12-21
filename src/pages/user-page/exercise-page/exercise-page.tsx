@@ -31,12 +31,6 @@ const exercisePage: FC = () => {
     console.log("Exercises login: ",login);
 
 
-    // * TODO цеплять с сервера упражнения
-    // const ex1: Exercise = {id: 1, name: "Exercise 1", difficulty_level: "Test 1"};
-    // const ex2: Exercise = {id: 2, name: "Exercise 2", difficulty_level: "Test 1"};
-    // const ex3: Exercise = {id: 3, name: "Exercise 3", difficulty_level: "Test 2"};
-    // const ex4: Exercise = {id: 4, name: "Exercise 4", difficulty_level: "Test 3"};
-    // const exercises:Exercise[] = [ex1, ex2, ex3, ex4];
 
     // * Состояние для выбранной сложности
     const [selectedDifficulty, setSelectedDifficulty] = useState<string>('');
@@ -89,8 +83,6 @@ const exercisePage: FC = () => {
             console.log(err);
         }
     }
-
-    // * TODO сделать список ссылок на упражнения
     const listExercises = filteredExercises.map( (ex) =>
         <li key={ex.id} className={'mb-5'}>
             <button className={'button-text'}
@@ -119,7 +111,6 @@ const exercisePage: FC = () => {
                             value={selectedDifficulty}
                             onChange={handleDifficultyChange} // Обработчик изменения
                             className={'border-2 border-black sel'}>
-                        {/* * TODO цеплять уровни сложности с сервера и выводить их сюда */}
                         <option value={''}></option>
                         {difficultList}
                     </select>
