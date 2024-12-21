@@ -1,4 +1,4 @@
-import {FC} from "react";
+import {FC, useEffect, useState} from "react";
 import {useLocation, useNavigate, useParams} from "react-router-dom";
 import './statistic.css'
 import {
@@ -12,6 +12,8 @@ import {
     Legend,
 } from 'chart.js';
 import {Line} from "react-chartjs-2";
+import {ResponseExercise} from "../exercise-page/exercise-page.tsx";
+import axios from "axios";
 
 // Регистрация компонентов Chart.js
 ChartJS.register(
@@ -28,6 +30,24 @@ ChartJS.register(
 const statistic:FC = () =>{
     const navigate = useNavigate();
     const {login: login } = useParams(); // Извлечение данных из состояния
+    const [exercises, setExercises] = useState<ResponseExercise[]>([]);
+    const [selectedExercise, setSelectedExercise] = useState('');
+
+    useEffect(() => {
+        const fetchAll = async () => {
+            try{
+                const responseExercises = await axios.get<ResponseExercise[]>("http://localhost:8080/user/get-exercises");
+                console.log("RESPONSE EXER\n",responseExercises.data)
+                setExercises(responseExercises.data)
+            }catch(err){
+                console.log("ERROR! \n", err)
+            }
+        }
+        fetchAll();
+    },[])
+    const exercisesList = exercises.map((ex) => {
+        return <option key={ex.id} value={ex.exerciseName}>{ex.exerciseName}</option>
+    })
 
     // Данные для графика
     const data = {
@@ -80,13 +100,11 @@ const statistic:FC = () =>{
                         Упражнение:
                     </label>
                     <select id={'select_exercise'}
+                            value={selectedExercise}
+                            onChange={(e) => setSelectedExercise(e.target.value)}
                             className={'border-2 border-black sel'}>
-                        {/* * TODO цеплять УПРАЖНЕНИЯ с сервера и выводить их сюда */}
-                        {/* ? пустая опция значит просмотр статистики в целом?? Придумать*/}
                         <option value={''}></option>
-                        <option value="Test 1">Test 1</option>
-                        <option value="Test 2">Test 2</option>
-                        <option value="Test 3">Test 3</option>
+                        {exercisesList}
                     </select>
                 </div>
                 <div className={'flex flex-col ml-5'}>
