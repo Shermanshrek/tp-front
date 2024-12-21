@@ -30,7 +30,6 @@ const users:FC = () => {
                         <th className={'border border-slate-600'}>id</th>
                         <th className={'border border-slate-600'}>Логин</th>
                         <th className={'border border-slate-600'}>Пароль</th>
-                        <th className={'border border-slate-600'}>Статистика</th>
                         <th className={'border border-slate-600'}>Удалить пользователя</th>
                     </tr>
                     </thead>
@@ -41,7 +40,6 @@ const users:FC = () => {
                                 <td className={'border border-slate-600 text-center'}>&nbsp; {user.id} &nbsp;</td>
                                 <td className={'border border-slate-600'}>&nbsp; {user.login} &nbsp; </td>
                                 <td className={'border border-slate-600'}>&nbsp; {user.password} &nbsp; </td>
-                                <td className={'border border-slate-600'}>&nbsp; {user.statistic} &nbsp; </td>
                                 <td className={'border border-slate-600 py-2 text-center'}>
                                     <button onClick={() => deleteUser(user, usersList)}
                                             className={'bg-gray-300 py-2 w-32'}>Удалить</button>

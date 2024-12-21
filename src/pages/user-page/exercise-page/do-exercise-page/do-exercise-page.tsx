@@ -19,12 +19,15 @@ interface Props{
     onSymbolCountChange: Dispatch<SetStateAction<number>>,
     onMistakesCountChange:Dispatch<SetStateAction<number>>,
     mistakes: number,
-    maxErrors: number
+    maxErrors: number,
+    symbols: number
 }
 
 const VirtualKeyboard = (props: Props) => {
     const [inputValue, setInputValue] = useState(props.exercise_text);
     const [nextCharIndex, setNextCharIndex] = useState(0);
+    const [win, setWin] = useState(false);
+    const [mistakes, setMistakes] = useState(false);
     const handleChange = (e) => {
         setNextCharIndex(e.target.innerText.length); // Обновляем индекс следующего символа
     };
@@ -32,6 +35,9 @@ const VirtualKeyboard = (props: Props) => {
     const getNextChar = () => {
         return inputValue[nextCharIndex] !== undefined ? inputValue[nextCharIndex] : '';
     };
+    const handleClosePopup = (func: Dispatch<SetStateAction<boolean>>) => {
+        func(false);
+    }
     const nextChar = getNextChar();
     useEffect(() => {
         const handleKeyDown = (event) => {
@@ -45,16 +51,22 @@ const VirtualKeyboard = (props: Props) => {
                 props.onSymbolCountChange((prev: number) => prev + 1);
             }
             else{
-                props.onMistakesCountChange(prev => prev+1);
+                props.onMistakesCountChange(prev => {
+                    const x = prev + 1
+                    console.log(x);
+                    return x
+                });
             }
-            if (nextCharIndex + 1 >= props.exercise_text.length) {
-                alert("Упражнение завершено! Вы ввели все символы.");
-                // Здесь можно сбросить состояние или выполнить другие действия
-            } else if (props.maxErrors && props.mistakes > props.maxErrors) {
-                alert("Упражнение завершено! Вы допустили слишком много ошибок.");
-                // Здесь можно сбросить состояние или выполнить другие действия
-            }
+
         };
+        if (props.symbols >= props.exercise_text.length) {
+            setWin(true);
+            // Здесь можно сбросить состояние или выполнить другие действия
+        } else if (props.mistakes > props.maxErrors) {
+            // props.maxErrors - 1 так как при нуле не работает(выдает попап при 2 ошибках).
+            setMistakes(true);
+            // Здесь можно сбросить состояние или выполнить другие действия
+        }
         // Добавляем обработчик события нажатия клавиш
         window.addEventListener('keydown', handleKeyDown);
 
@@ -90,6 +102,8 @@ const VirtualKeyboard = (props: Props) => {
                     </div>
                 ))}
             </div>
+            {win && <Popup message={"Вы прошли упражнение!"} onClose={() => handleClosePopup(setWin)}/>}
+            {mistakes && <Popup message={"Вы допустили слишком много ошибок!"} onClose={() => handleClosePopup(setMistakes)}/>}
         </div>
 
     );
@@ -127,7 +141,7 @@ const doExercise: FC = () => {
     const location = useLocation();
     const ex: ResponseExercise = location.state?.ex;
     const [seconds, setSeconds] = useState<number>(0);
-    const [symbols, setSymbols] = useState(0);
+    const [symbols, setSymbols] = useState(1);
     const [mistakes, setMistakes] = useState<number>(0);
     const [isActive, setIsActive] = useState<boolean>(true);
 
@@ -219,7 +233,7 @@ const doExercise: FC = () => {
 
                 <div className="flex gap-4 text-sm space-x-10 ml-5">
                     {/* Количество набранных символов? */}
-                    <span  className={'text-xl'}>Количество символов: {symbols}/{ex.exerciseText.length}</span>
+                    <span  className={'text-xl'}>Количество символов: {symbols - 1}/{ex.exerciseText.length}</span>
                     <span className={'text-xl'}>Средняя скорость: x</span>
                     <span className={'text-xl'}>Время: {seconds}/{ex.doTime}</span>
                     <span className={'text-xl'}>Ошибки: {mistakes}/{ex.errors}</span>
@@ -245,7 +259,8 @@ const doExercise: FC = () => {
                                          maxErrors={ex.errors}
                                          onSymbolCountChange={setSymbols}
                                          onMistakesCountChange={setMistakes}
-                                         mistakes={mistakes}/>
+                                         mistakes={mistakes}
+                                         symbols={symbols}/>
                     </div>
                 </div>
             </div>
