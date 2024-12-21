@@ -5,7 +5,7 @@ import {instance} from "../../api.config.ts";
 
 
 const UserPage: FC = () =>{
-    // * TODO Добавить проверку на то, что пользователь авторизован(показываем страницу, только авторизованным пользователям, иначе кидаем 403 ошибку
+
     const navigate = useNavigate();
     const {login: login } = useParams(); // Извлечение данных из состояния
 
