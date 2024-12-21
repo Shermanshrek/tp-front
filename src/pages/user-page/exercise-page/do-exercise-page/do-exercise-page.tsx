@@ -50,7 +50,7 @@ const VirtualKeyboard = (props: Props) => {
             if (nextCharIndex + 1 >= props.exercise_text.length) {
                 alert("Упражнение завершено! Вы ввели все символы.");
                 // Здесь можно сбросить состояние или выполнить другие действия
-            } else if (props.maxErrors && props.onErrorCountChange >= props.maxErrors) {
+            } else if (props.maxErrors && props.mistakes > props.maxErrors) {
                 alert("Упражнение завершено! Вы допустили слишком много ошибок.");
                 // Здесь можно сбросить состояние или выполнить другие действия
             }
@@ -240,7 +240,12 @@ const doExercise: FC = () => {
             <div className="flex flex-col items-center w-full">
                 <div className="w-full bg-gray-100 border border-gray-300 p-2 text-center text-sm overflow-auto mb-4">
                     <div className={''}>
-                        <VirtualKeyboard visibleKeyBoard={p.visibleKeyBoard} exercise_text={ex.exerciseText} maxErrors={ex.errors} onSymbolCountChange={setSymbols} onMistakesCountChange={setMistakes}/>
+                        <VirtualKeyboard visibleKeyBoard={p.visibleKeyBoard}
+                                         exercise_text={ex.exerciseText}
+                                         maxErrors={ex.errors}
+                                         onSymbolCountChange={setSymbols}
+                                         onMistakesCountChange={setMistakes}
+                                         mistakes={mistakes}/>
                     </div>
                 </div>
             </div>

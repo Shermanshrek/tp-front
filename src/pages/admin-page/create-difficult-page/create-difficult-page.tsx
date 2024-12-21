@@ -9,10 +9,10 @@ import {instance} from "../../../api.config.ts";
 const createDifficult:FC = () => {
     const navigate = useNavigate();
     const [title, setTitle] = useState('');
-    const [minLen, setMinLen] = useState<number>();
-    const [maxLen, setMaxLen] = useState<number>();
-    const [pressTime, setPressTime] = useState<number>();
-    const [maxMistakes, setMaxMistakes] = useState<number>();
+    const [minLen, setMinLen] = useState<number>(0);
+    const [maxLen, setMaxLen] = useState<number>(0);
+    const [pressTime, setPressTime] = useState<number>(0);
+    const [maxMistakes, setMaxMistakes] = useState<number>(0);
     const[errors, setErrors] = useState<string[]>([]);
 
     const save = async () => {
