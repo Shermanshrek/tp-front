@@ -16,6 +16,7 @@ const signIn: FC = ()=>{
     const navigate = useNavigate();
     const [login, setLogin] = useState<string>('');
     const [password, setPassword] = useState<string>('');
+    const [incorrect, setIncorrect] = useState(false);
     const handleClick = async () =>{
         const user:UserSignIn = {username: login, password: password}
         console.log("SIGN IN USER",user);
@@ -34,19 +35,22 @@ const signIn: FC = ()=>{
             console.log("TOKEN SIGN IN: ", decoded);
             if(decoded.role === "ROLE_USER"){
                 const login = decoded.sub
+                setIncorrect(false)
                 navigate(`/user/${login}`, {replace: false});
             } else if (decoded.role === "ROLE_ADMIN") {
+                setIncorrect(false)
                 navigate('/admin')
             }
 
         }catch (err){
-            console.log(err);
+            setIncorrect(true)
         }
     }
     return(
        <div className="bg-gray-200 justify-items-center min-h-screen p-4">
            <div className="flex flex-col bg-white p-8 aspect-square shadow-md">
                <div className="py-5 ">
+                   {incorrect && <p className={'text-xl text-red-600 mb-3'}>Неверный логин или пароль!</p>}
                    <div className="flex flex-row space-x-5">
                        <p>Логин</p> <input id="login_input" value={login} onChange={(e) => setLogin(e.target.value.trim())} className="border-2 border-black"/>
                    </div>
@@ -67,4 +71,7 @@ const signIn: FC = ()=>{
        </div>
     );
 }
+
+
+
 export default signIn;

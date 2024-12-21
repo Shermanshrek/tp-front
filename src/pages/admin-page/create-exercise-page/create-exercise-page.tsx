@@ -30,10 +30,12 @@ const createExercise: FC = () =>{
     const [selected, setSelected] = useState('');
     const navigate = useNavigate();
 
+
     useEffect(() => {
         const fetchData = async () => {
             try{
                 const response = await axios.get<ResponseDifficulty[]>("http://localhost:8080/admin/get-difficulty-levels");
+
                 console.log(response.data);
                 setDif(response.data);
             }catch(err){
