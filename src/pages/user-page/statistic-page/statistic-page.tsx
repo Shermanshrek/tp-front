@@ -170,10 +170,10 @@ const statistic: FC = () => {
                 <div className={'flex flex-col ml-5'}>
                     <div className={'flex flex-row space-x-5 text-xl mt-5'}>
                         <p>Среднее количество ошибок: {isNaN(+meanStats[0]) ? '' : meanStats[0]}</p>
-                        <p>Средняя скорость: {isNaN(+meanStats[0]) ? '' : meanStats[1]}</p>
+                        <p>Средняя скорость: {isNaN(+meanStats[1]) ? '' : meanStats[1]}</p>
                     </div>
                     <div className={'flex flex-row space-x-5 text-xl mt-5'}>
-                        <p>Среднее время выполнения: {isNaN(+meanStats[0]) ? '' : meanStats[2]}</p>
+                        <p>Среднее время выполнения: {isNaN(+meanStats[1]) ? '' : meanStats[2]}</p>
                     </div>
                     <p className={'space-x-5 text-xl mt-5'}>Последнее выполнение {
                         stat[stat.length - 1] === undefined ? '' : getDate(stat[stat.length - 1].exerciseDate)
