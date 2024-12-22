@@ -1,4 +1,4 @@
-import {FC, useEffect, useState} from "react";
+import {ChangeEvent, FC, useEffect, useState} from "react";
 import {useLocation, useNavigate, useParams} from "react-router-dom";
 import './statistic.css'
 import {
@@ -14,6 +14,8 @@ import {
 import {Line} from "react-chartjs-2";
 import {ResponseExercise} from "../exercise-page/exercise-page.tsx";
 import axios from "axios";
+import {Stats} from "../exercise-page/do-exercise-page/stats.ts";
+import {ResponseStat} from "./response-stat.ts";
 
 // Регистрация компонентов Chart.js
 ChartJS.register(
@@ -32,7 +34,7 @@ const statistic:FC = () =>{
     const {login: login } = useParams(); // Извлечение данных из состояния
     const [exercises, setExercises] = useState<ResponseExercise[]>([]);
     const [selectedExercise, setSelectedExercise] = useState('');
-
+    const [stat, setStat] = useState<ResponseStat>();
     useEffect(() => {
         const fetchAll = async () => {
             try{
@@ -91,6 +93,32 @@ const statistic:FC = () =>{
             }
         }
     };
+    const handleChangeSelect = async (event:  ChangeEvent<HTMLSelectElement>, exercises: ResponseExercise[]) => {
+        setSelectedExercise(event.target.value)
+        // console.log("selected exercise: \n", selectedExercise)
+        let exId: number | undefined = undefined;
+        for (const ex of exercises) {
+            if(ex.exerciseName === event.target.value){
+                exId = ex.id;
+            }
+        }
+        if(exId !== undefined){
+            try{
+                const response = await axios.get<ResponseStat>(`http://localhost:8080/user/get-exercise-stat/${exId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log(response.data);
+                setStat(response.data);
+            }catch (err){
+                console.log(err);
+            }
+        }
+
+    }
+
     return(
         <div className={'flex flex-col bg-gray-200 items-center justify-items-center min-h-screen p-4'}>
             <div className="flex flex-col bg-white p-8 aspect-square shadow-md relative">
@@ -101,7 +129,8 @@ const statistic:FC = () =>{
                     </label>
                     <select id={'select_exercise'}
                             value={selectedExercise}
-                            onChange={(e) => setSelectedExercise(e.target.value)}
+
+                            onChange={(e) => handleChangeSelect(e, exercises)}
                             className={'border-2 border-black sel'}>
                         <option value={''}></option>
                         {exercisesList}
@@ -109,14 +138,14 @@ const statistic:FC = () =>{
                 </div>
                 <div className={'flex flex-col ml-5'}>
                     <div className={'flex flex-row space-x-5 text-xl mt-5'}>
-                        <p>Выполнено Х раз</p>
-                        <p>Количество ошибок: X</p>
+                        <p>Количество ошибок: {stat?.errorCount}</p>
+                        <p>Средняя скорость: {stat?.meanTime}</p>
                     </div>
                     <div className={'flex flex-row space-x-5 text-xl mt-5'}>
-                        <p>Средняя скорость: Х</p>
-                        <p>Время выполнения: X</p>
+
+                        <p>Время выполнения: {stat?.durationInSeconds}</p>
                     </div>
-                    <p className={'space-x-5 text-xl mt-5'}>Последнее выполнение {new Date().toLocaleDateString()}</p>
+                    <p className={'space-x-5 text-xl mt-5'}>Последнее выполнение {stat?.exerciseDate}</p>
                 </div>
                 <h1 className={' mt-10 text-2xl'}>Средняя скорость набора упражнения по дням</h1>
                 {/*Здесь должен быть график*/}
