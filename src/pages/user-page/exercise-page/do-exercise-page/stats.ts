@@ -5,6 +5,6 @@ export interface Stats{
     errors: number,
     date: Date,
     doTime: number,
-    meanSpeed: number
+    meanTime: number
 
 }

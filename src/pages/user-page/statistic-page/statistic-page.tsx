@@ -14,9 +14,7 @@ import {
 import {Line} from "react-chartjs-2";
 import {ResponseExercise} from "../exercise-page/exercise-page.tsx";
 import axios from "axios";
-import {Stats} from "../exercise-page/do-exercise-page/stats.ts";
 import {ResponseStat} from "./response-stat.ts";
-
 // Регистрация компонентов Chart.js
 ChartJS.register(
     CategoryScale,
@@ -34,7 +32,7 @@ const statistic:FC = () =>{
     const {login: login } = useParams(); // Извлечение данных из состояния
     const [exercises, setExercises] = useState<ResponseExercise[]>([]);
     const [selectedExercise, setSelectedExercise] = useState('');
-    const [stat, setStat] = useState<ResponseStat>();
+    const [stat, setStat] = useState<ResponseStat[]>([]);
     useEffect(() => {
         const fetchAll = async () => {
             try{
@@ -104,12 +102,7 @@ const statistic:FC = () =>{
         }
         if(exId !== undefined){
             try{
-                const response = await axios.get<ResponseStat>(`http://localhost:8080/user/get-exercise-stat/${exId}`, {
-                    headers: {
-                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
-                        'Content-Type': 'application/json'
-                    }
-                });
+                const response = await axios.get<ResponseStat[]>(`http://localhost:8080/user/get-exercise-stat/${login}/${exId}`);
                 console.log(response.data);
                 setStat(response.data);
             }catch (err){
@@ -118,7 +111,21 @@ const statistic:FC = () =>{
         }
 
     }
+    const meanStat = (stats: ResponseStat[]): [string, string, string] => {
+        let meanErrors = 0;
+        let meanMeanSpeed = 0;
+        let meanDoTime = 0;
+        const len = stats.length
+        for (let i = 0; i < len; i++) {
+            meanErrors += stats[i].errorCount
+            meanMeanSpeed += stats[i].meanTime;
+            meanDoTime += stats[i].durationInSeconds
+        }
 
+        return [(meanErrors/len).toFixed(2), (meanMeanSpeed/len).toFixed(2), (meanDoTime/len).toFixed(2)];
+
+    }
+    const meanStats = meanStat(stat);
     return(
         <div className={'flex flex-col bg-gray-200 items-center justify-items-center min-h-screen p-4'}>
             <div className="flex flex-col bg-white p-8 aspect-square shadow-md relative">
@@ -138,14 +145,13 @@ const statistic:FC = () =>{
                 </div>
                 <div className={'flex flex-col ml-5'}>
                     <div className={'flex flex-row space-x-5 text-xl mt-5'}>
-                        <p>Количество ошибок: {stat?.errorCount}</p>
-                        <p>Средняя скорость: {stat?.meanTime}</p>
+                        <p>Среднее количество ошибок: {meanStats[0]}</p>
+                        <p>Средняя скорость: {meanStats[1]}</p>
                     </div>
                     <div className={'flex flex-row space-x-5 text-xl mt-5'}>
-
-                        <p>Время выполнения: {stat?.durationInSeconds}</p>
+                        <p>Среднее время выполнения: {meanStats[2]}</p>
                     </div>
-                    <p className={'space-x-5 text-xl mt-5'}>Последнее выполнение {stat?.exerciseDate}</p>
+                    <p className={'space-x-5 text-xl mt-5'}>Последнее выполнение {stat[stat.length - 1]?.exerciseDate}</p>
                 </div>
                 <h1 className={' mt-10 text-2xl'}>Средняя скорость набора упражнения по дням</h1>
                 {/*Здесь должен быть график*/}

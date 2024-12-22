@@ -237,8 +237,9 @@ const doExercise: FC = () => {
                 errors: mistakes,
                 date: new Date().toLocaleDateString(),
                 doTime: seconds,
-                meanSpeed: meanSpeed
+                meanTime: +meanSpeed.toFixed(3)
             }
+            console.log(stat);
             return stat
         }
         return undefined;
