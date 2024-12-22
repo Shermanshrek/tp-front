@@ -1,20 +1,23 @@
 import {ChangeEvent, FC, useEffect, useState} from "react";
-import {useLocation, useNavigate, useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import './statistic.css'
 import {
-    Chart as ChartJS,
     CategoryScale,
+    Chart as ChartJS,
+    Legend,
     LinearScale,
-    PointElement,
     LineElement,
+    PointElement,
     Title,
     Tooltip,
-    Legend,
 } from 'chart.js';
 import {Line} from "react-chartjs-2";
 import {ResponseExercise} from "../exercise-page/exercise-page.tsx";
 import axios from "axios";
 import {ResponseStat} from "./response-stat.ts";
+import {format} from "date-fns";
+import {ru} from "date-fns/locale";
+import {get} from "mobx";
 // Регистрация компонентов Chart.js
 ChartJS.register(
     CategoryScale,
@@ -27,42 +30,41 @@ ChartJS.register(
 );
 
 
-const statistic:FC = () =>{
+const statistic: FC = () => {
     const navigate = useNavigate();
-    const {login: login } = useParams(); // Извлечение данных из состояния
+    const {login: login} = useParams(); // Извлечение данных из состояния
     const [exercises, setExercises] = useState<ResponseExercise[]>([]);
     const [selectedExercise, setSelectedExercise] = useState('');
     const [stat, setStat] = useState<ResponseStat[]>([]);
     useEffect(() => {
         const fetchAll = async () => {
-            try{
+            try {
                 const responseExercises = await axios.get<ResponseExercise[]>("http://localhost:8080/user/get-exercises");
-                console.log("RESPONSE EXER\n",responseExercises.data)
+                console.log("RESPONSE EXER\n", responseExercises.data)
                 setExercises(responseExercises.data)
-            }catch(err){
+            } catch (err) {
                 console.log("ERROR! \n", err)
             }
         }
         fetchAll();
-    },[])
+    }, [])
     const exercisesList = exercises.map((ex) => {
         return <option key={ex.id} value={ex.exerciseName}>{ex.exerciseName}</option>
     })
 
     // Данные для графика
-    const data = {
-        // * TODO хватать данные с сервера
-        labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'], // Метки по оси X
+    const [chartData, setChartData] = useState({
+        labels: [] as string[],
         datasets: [
             {
-                label: 'Средняя скорость', // Название графика
-                data: [12, 19, 3, 5, 2, 3], // Данные по оси Y
+                label: 'Средняя скорость',
+                data: [] as number[],
                 fill: false,
                 backgroundColor: 'white',
                 borderColor: 'black',
             },
         ],
-    };
+    });
 
     // Опции для графика
     const options = {
@@ -91,21 +93,22 @@ const statistic:FC = () =>{
             }
         }
     };
-    const handleChangeSelect = async (event:  ChangeEvent<HTMLSelectElement>, exercises: ResponseExercise[]) => {
+    const handleChangeSelect = async (event: ChangeEvent<HTMLSelectElement>, exercises: ResponseExercise[]) => {
         setSelectedExercise(event.target.value)
         // console.log("selected exercise: \n", selectedExercise)
         let exId: number | undefined = undefined;
         for (const ex of exercises) {
-            if(ex.exerciseName === event.target.value){
+            if (ex.exerciseName === event.target.value) {
                 exId = ex.id;
             }
         }
-        if(exId !== undefined){
-            try{
+        if (exId !== undefined) {
+            try {
                 const response = await axios.get<ResponseStat[]>(`http://localhost:8080/user/get-exercise-stat/${login}/${exId}`);
                 console.log(response.data);
                 setStat(response.data);
-            }catch (err){
+                fillChartData(response.data);
+            } catch (err) {
                 console.log(err);
             }
         }
@@ -122,11 +125,32 @@ const statistic:FC = () =>{
             meanDoTime += stats[i].durationInSeconds
         }
 
-        return [(meanErrors/len).toFixed(2), (meanMeanSpeed/len).toFixed(2), (meanDoTime/len).toFixed(2)];
-
+        return [(meanErrors / len).toFixed(2), (meanMeanSpeed / len).toFixed(2), (meanDoTime / len).toFixed(2)];
     }
+
+    const getDate = (date: Date) => {
+        return format(new Date(date), 'd MMMM yyyy, HH:mm', {locale: ru});
+    }
+    const fillChartData = (data: ResponseStat[]) => {
+        // Обновляем данные для графика
+        const labels = data.map(stat => getDate(stat.exerciseDate));
+        const speedData = data.map(stat => stat.meanTime); // Предполагается, что meanTime — это средняя скорость
+        setChartData({
+            labels,
+            datasets: [
+                {
+                    label: 'Средняя скорость',
+                    data: speedData,
+                    fill: false,
+                    backgroundColor: 'white',
+                    borderColor: 'black',
+                },
+            ],
+        });
+    }
+
     const meanStats = meanStat(stat);
-    return(
+    return (
         <div className={'flex flex-col bg-gray-200 items-center justify-items-center min-h-screen p-4'}>
             <div className="flex flex-col bg-white p-8 aspect-square shadow-md relative">
                 <h1 className={'text-2xl'}>Статистика</h1>
@@ -145,18 +169,20 @@ const statistic:FC = () =>{
                 </div>
                 <div className={'flex flex-col ml-5'}>
                     <div className={'flex flex-row space-x-5 text-xl mt-5'}>
-                        <p>Среднее количество ошибок: {meanStats[0]}</p>
-                        <p>Средняя скорость: {meanStats[1]}</p>
+                        <p>Среднее количество ошибок: {isNaN(+meanStats[0]) ? '' : meanStats[0]}</p>
+                        <p>Средняя скорость: {isNaN(+meanStats[0]) ? '' : meanStats[1]}</p>
                     </div>
                     <div className={'flex flex-row space-x-5 text-xl mt-5'}>
-                        <p>Среднее время выполнения: {meanStats[2]}</p>
+                        <p>Среднее время выполнения: {isNaN(+meanStats[0]) ? '' : meanStats[2]}</p>
                     </div>
-                    <p className={'space-x-5 text-xl mt-5'}>Последнее выполнение {stat[stat.length - 1]?.exerciseDate}</p>
+                    <p className={'space-x-5 text-xl mt-5'}>Последнее выполнение {
+                        stat[stat.length - 1] === undefined ? '' : getDate(stat[stat.length - 1].exerciseDate)
+                    }</p>
                 </div>
-                <h1 className={' mt-10 text-2xl'}>Средняя скорость набора упражнения по дням</h1>
+                <h1 className={' mt-10 text-2xl'}>Средняя скорость набора упражнения</h1>
                 {/*Здесь должен быть график*/}
                 <div className={'mb-16 items-center justify-items-center '}>
-                    <Line data={data} options={options}/>
+                    <Line data={chartData} options={options}/>
                 </div>
 
                 <button onClick={() => navigate(-1)}

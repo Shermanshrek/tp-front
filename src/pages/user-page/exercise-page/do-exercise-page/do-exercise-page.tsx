@@ -235,7 +235,7 @@ const doExercise: FC = () => {
                 exerciseId: id_exercise,
                 exerciseName: ex.exerciseName,
                 errors: mistakes,
-                date: new Date().toLocaleDateString(),
+                date: new Date(),
                 doTime: seconds,
                 meanTime: +meanSpeed.toFixed(3)
             }

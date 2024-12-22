@@ -1,7 +1,7 @@
 export interface ResponseStat{
     durationInSeconds: number,
     errorCount: number,
-    exerciseDate: string,
+    exerciseDate: Date,
     exerciseId: number,
     exerciseName: string,
     id: number,
