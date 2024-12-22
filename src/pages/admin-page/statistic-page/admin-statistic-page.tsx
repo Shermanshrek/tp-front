@@ -15,7 +15,6 @@ import {Line} from "react-chartjs-2";
 import {instance} from "../../../api.config.ts";
 import {User} from "./User.ts";
 import {ResponseExercise} from "../../user-page/exercise-page/exercise-page.tsx";
-import {Stats} from "../../user-page/exercise-page/do-exercise-page/stats.ts";
 import {ResponseStat} from "../../user-page/statistic-page/response-stat.ts";
 import {format} from "date-fns";
 import {ru} from "date-fns/locale";

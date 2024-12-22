@@ -1,6 +1,7 @@
 import {FC} from "react";
 import './admin.css'
 import {useNavigate} from "react-router-dom";
+import {handleClickHelp} from "../start-page/start-page.tsx";
 
 const admin: FC = () =>{
     // * TODO ПРОВЕРКА НА АДМИНА
@@ -25,7 +26,7 @@ const admin: FC = () =>{
                     <button onClick={() => navigate('/admin/statistic', {replace:false})}
                             className="bg-gray-300 px-4 py-2">Статистика</button>
 
-                    <button className="bg-gray-300 px-4 py-2">Справка</button>
+                    <button onClick={handleClickHelp} className="bg-gray-300 px-4 py-2">Справка</button>
                 </div>
             </div>
         </div>

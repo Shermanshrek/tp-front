@@ -24,7 +24,9 @@ interface Props{
     maxErrors: number,
     symbols: number,
     navigate: NavigateFunction,
-    sendStats: () => Promise<void>
+    sendStats: () => Promise<void>,
+    isActive: boolean,
+    setIsActive: Dispatch<SetStateAction<boolean>>
 }
 
 const VirtualKeyboard = (props: Props) => {
@@ -32,6 +34,7 @@ const VirtualKeyboard = (props: Props) => {
     const [nextCharIndex, setNextCharIndex] = useState(0);
     const [win, setWin] = useState(false);
     const [mistakes, setMistakes] = useState(false);
+    const [readOnlyArea, setReadOnlyArea] = useState(false);
     const handleChange = (e) => {
         setNextCharIndex(e.target.innerText.length); // Обновляем индекс следующего символа
     };
@@ -41,35 +44,45 @@ const VirtualKeyboard = (props: Props) => {
     };
     const handleClosePopup = (func: Dispatch<SetStateAction<boolean>>) => {
         func(false);
+        setReadOnlyArea(false);
         props.sendStats();
         props.navigate(-1);
     }
-    const nextChar = getNextChar();
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            const enteredChar = event.key;
-            console.log(enteredChar);
-            // Проверяем, соответствует ли введённый символ следующему символу
-            if (enteredChar === nextChar) {
-                // Удаляем первый символ из inputValue
-                setInputValue((prev) => prev.slice(1));
-                setNextCharIndex(nextCharIndex - 1); // Обновляем индекс
-                props.onSymbolCountChange((prev: number) => prev + 1);
-            }
-            else{
-                props.onMistakesCountChange(prev => {
-                    const x = prev + 1
-                    console.log(x);
-                    return x
-                });
-            }
 
-        };
+    const nextChar = getNextChar();
+    const handleKeyDown = (event) => {
+        const enteredChar = event.key;
+        console.log(enteredChar);
+        // Проверяем, соответствует ли введённый символ следующему символу
+        if (enteredChar === nextChar) {
+            // Удаляем первый символ из inputValue
+            setInputValue((prev) => prev.slice(1));
+            setNextCharIndex(nextCharIndex - 1); // Обновляем индекс
+            props.onSymbolCountChange((prev: number) => prev + 1);
+        }
+        else{
+            props.onMistakesCountChange(prev => {
+                const x = prev + 1
+                console.log(x);
+                return x
+            });
+        }
+
+    };
+
+    useEffect(() => {
+
         if (props.symbols > props.exercise_text.length) {
             setWin(true);
+            props.setIsActive(false);
+            setReadOnlyArea(true);
+            console.log("READONLY:", readOnlyArea);
             // Здесь можно сбросить состояние или выполнить другие действия
         } else if (props.mistakes > props.maxErrors) {
             setMistakes(true);
+            props.setIsActive(false);
+            setReadOnlyArea(true);
+            console.log("READONLY:", readOnlyArea);
             // Здесь можно сбросить состояние или выполнить другие действия
         }
         // Добавляем обработчик события нажатия клавиш
@@ -87,6 +100,7 @@ const VirtualKeyboard = (props: Props) => {
            <textarea
                className="border rounded w-full h-32 p-2 mb-4"
                placeholder="Финиш!"
+               readOnly={readOnlyArea}
                value={inputValue}
                onChange={handleChange}
            />
@@ -108,23 +122,20 @@ const VirtualKeyboard = (props: Props) => {
                 ))}
             </div>
             {win && <Popup message={"Вы прошли упражнение!"} onClose={() => handleClosePopup(setWin)}/>}
-            {mistakes && <Popup message={"Вы допустили слишком много ошибок!"} onClose={() => handleClosePopup(setMistakes)}/>}
+            {mistakes && <Popup message={"Вы допустили слишком много ошибок!"} onClose={() => handleClosePopup(setMistakes)} />}
         </div>
 
     );
 }
-
-
 interface PopupProps {
     message: string;
     onClose: () => void;
 }
-
 const Popup: FC<PopupProps> = ({message, onClose}) => {
     return(
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
         <div className="bg-white rounded-lg p-6 shadow-lg">
-            <p className="text-lg font-semibold">{message}</p>
+            <p className="flex text-lg font-semibold">{message}</p>
             <button 
                 className="mt-4 bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600"
                 onClick={onClose}
@@ -134,10 +145,7 @@ const Popup: FC<PopupProps> = ({message, onClose}) => {
         </div>
     </div>
     )
-} 
-
-
-
+}
 const doExercise: FC = () => {
     const [checked, setChecked] = useState(false);
     const [id, setId] = useState(0);
@@ -150,6 +158,7 @@ const doExercise: FC = () => {
     const [mistakes, setMistakes] = useState<number>(0);
     const [meanSpeed, setMeanSpeed] = useState(0);
     const [isActive, setIsActive] = useState<boolean>(true);
+
 
     const [showPopup, setShowPopup] = useState(false);
     const [pausePopup, setPausePopup] = useState(false);
@@ -181,6 +190,7 @@ const doExercise: FC = () => {
         // Проверка времени в отдельном useEffect
         if (seconds > ex.doTime) {
             setIsActive(false); // Остановить таймер
+            setReadOnlyArea(true);
             setShowPopup(true);
         }
     }, [seconds, ex.doTime]); // Зависимость от seconds и ex.doTime
@@ -192,26 +202,19 @@ const doExercise: FC = () => {
         setPausePopup(!pausePopup);
     };
 
-
-    /*
-        interface ResponseExercise{
-            id: number,
-            doTime: number,
-            exerciseName: string,
-            difficultyLevel: string,
-            exerciseText: string,
-            errors: number
-        }
-    */
     //Для проигрыша по времени
     const handleClosePopup = () => {
         setShowPopup(false); // Закрыть всплывающее окно
+        setIsActive(false);
+        setReadOnlyArea(false);
         sendStats();
         navigate(-1);
     };
+
     //Для паузы
     const handleClosePopup2 = () => {
         setIsActive(true);
+        setReadOnlyArea(false)
         setPausePopup(false); // Закрыть всплывающее окно
 
 
@@ -243,6 +246,11 @@ const doExercise: FC = () => {
             return stat
         }
         return undefined;
+
+    }
+    const handleRestartPopup = () => {
+        setReadOnlyArea(false);
+        // sendStats()
 
     }
 
@@ -301,6 +309,8 @@ const doExercise: FC = () => {
                                          mistakes={mistakes}
                                          navigate={navigate}
                                          sendStats={sendStats}
+                                         setIsActive={setIsActive}
+                                         isActive={isActive}
                                          symbols={symbols}/>
                     </div>
                 </div>
@@ -312,8 +322,4 @@ const doExercise: FC = () => {
 
     );
 };
-
-
-
-
 export default doExercise;

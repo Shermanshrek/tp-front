@@ -24,8 +24,6 @@ import PrivateRoute from "./privateRoute.tsx";
 import {observer} from "mobx-react-lite";
 
 const App = observer(() => {
-
-    const location = useLocation();
     useEffect(() => {
         AuthStore.checkAuth();
     }, []);
@@ -49,6 +47,7 @@ const App = observer(() => {
             <Route path={`user/:login/exercises`} element={<PrivateRoute page={<ExercisePage/>}/>}/>
             <Route path={`user/:login/statistic`} element={<PrivateRoute page={<StatisticPage/>}/>}/>
             <Route path={`user/:login/exercises/:id`} element={<PrivateRoute page={<DoExercisePage/>}/>}/>
+            <Route path={'help.html'}/>
 
             <Route path={'*'} element={<NotFoundPage/>}/>
         </Routes>
