@@ -18,6 +18,7 @@ import {ResponseStat} from "./response-stat.ts";
 import {format} from "date-fns";
 import {ru} from "date-fns/locale";
 import {get} from "mobx";
+import {instance} from "../../../api.config.ts";
 // Регистрация компонентов Chart.js
 ChartJS.register(
     CategoryScale,
@@ -36,12 +37,16 @@ const statistic: FC = () => {
     const [exercises, setExercises] = useState<ResponseExercise[]>([]);
     const [selectedExercise, setSelectedExercise] = useState('');
     const [stat, setStat] = useState<ResponseStat[]>([]);
+    const [allStatsUser, setAllStatsUser] = useState<ResponseStat[]>([])
     useEffect(() => {
         const fetchAll = async () => {
             try {
                 const responseExercises = await axios.get<ResponseExercise[]>("http://localhost:8080/user/get-exercises");
+                const responseAllStats = await instance.get<ResponseStat[]>(`/user/get-exercise-stat/${login}`);
                 console.log("RESPONSE EXER\n", responseExercises.data)
+                console.log("RESPONSE ALL STATS: ", responseAllStats.data)
                 setExercises(responseExercises.data)
+                setAllStatsUser(responseAllStats.data);
             } catch (err) {
                 console.log("ERROR! \n", err)
             }
@@ -154,6 +159,7 @@ const statistic: FC = () => {
         <div className={'flex flex-col bg-gray-200 items-center justify-items-center min-h-screen p-4'}>
             <div className="flex flex-col bg-white p-8 aspect-square shadow-md relative">
                 <h1 className={'text-2xl'}>Статистика</h1>
+                <StatsTable stats={allStatsUser} getDate={getDate}/>
                 <div className={'flex flex-row ml-5'}>
                     <label htmlFor={'select_exercise'} className={'text-xl mr-5 mt-1'}>
                         Упражнение:
@@ -193,6 +199,41 @@ const statistic: FC = () => {
 
         </div>
     );
+}
+
+interface PropsTable{
+    stats: ResponseStat[],
+    getDate(date: Date): string
+}
+const StatsTable: FC<PropsTable> = (props: PropsTable) => {
+    const sortedStats = props.stats.sort((a,b) => a.exerciseName < b.exerciseName ? -1 : 1)
+    return (
+        <table className={"table-auto border-collapse mb-10"}>
+            <thead className={"border border-slate-60"}>
+            <tr className={'items-center'}>
+                <th className={"border border-slate-60 border-black"}>Название упражнения</th>
+                <th className={"border border-slate-60 border-black"}>Средняя скорость</th>
+                <th className={"border border-slate-60 border-black"}>Время выполнения</th>
+                <th className={"border border-slate-60 border-black"}>Количество ошибок</th>
+                <th className={"border border-slate-60 border-black"}>Дата выполнения</th>
+            </tr>
+            </thead>
+            <tbody>
+                {sortedStats.map(s => {
+                    return (
+                        <tr className={"border border-black items-center"} key={s.id}>
+                            <td className={"border border-black text-center"}>{s.exerciseName}</td>
+                            <td className={"border border-black text-center"}>{s.meanTime}</td>
+                            <td className={"border border-black text-center"}>{s.durationInSeconds}</td>
+                            <td className={"border border-black text-center"}>{s.errorCount}</td>
+                            <td className={"border border-black text-center"}>{props.getDate(s.exerciseDate)}</td>
+                        </tr>
+                    );
+                })}
+            </tbody>
+        </table>
+
+    )
 }
 
 export default statistic;

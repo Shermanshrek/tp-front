@@ -31,7 +31,7 @@ ChartJS.register(
 );
 
 
-const statistic:FC = () =>{
+const statistic: FC = () => {
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -40,13 +40,17 @@ const statistic:FC = () =>{
     const [selectedUser, setSelectedUser] = useState<string>('')
     const [selectedExercise, setSelectedExercise] = useState<string>('');
     const [stats, setStats] = useState<ResponseStat[]>([]);
+    const [allStats, setAllStats] = useState<ResponseStat[]>([]);
     useEffect(() => {
         const fetchUsers = async () => {
             try {
                 const response = await instance.get<User[]>('/admin/get-all-users')
-                console.log(response.data);
-                setUsers(response.data);
-            }catch (err){
+                const responseAllStats = await instance.get<ResponseStat[]>('/admin/get-all-stat');
+                console.log("RESPONCE USERS: \n", response.data);
+                console.log("RESPONSE ALL STATS: \n", responseAllStats.data);
+                    setUsers(response.data);
+                setAllStats(responseAllStats.data);
+            } catch (err) {
                 console.log(err);
             }
         }
@@ -97,28 +101,28 @@ const statistic:FC = () =>{
     const filteredUsersList = users.filter(u => u.role !== "ROLE_ADMIN");
     const allUsers = filteredUsersList.map((u, index) => <option key={index} value={u.username}>{u.username}</option>)
 
-    const handleChangeExercises = async (e: ChangeEvent<HTMLSelectElement>) =>{
+    const handleChangeExercises = async (e: ChangeEvent<HTMLSelectElement>) => {
         setSelectedExercise(e.target.value);
         try {
             const exer = exercises.find(ex => ex.exerciseName === e.target.value);
-            if(exer !== undefined){
+            if (exer !== undefined) {
                 const response = await instance.get(`/admin/get-exercise-stat/${selectedUser}/${exer.id}`);
                 setStats(response.data);
                 console.log(response.data);
                 fillChartData(response.data);
             }
 
-        }catch (err){
+        } catch (err) {
             console.log(err);
         }
     }
-    const handleChangeUser = async (e:ChangeEvent<HTMLSelectElement>) => {
+    const handleChangeUser = async (e: ChangeEvent<HTMLSelectElement>) => {
         setSelectedUser(e.target.value)
         try {
             const response = await instance.get<ResponseExercise[]>(`admin/get-stat-user/${e.target.value}`)
             setExercises(response.data);
             console.log(response.data);
-        }catch (err){
+        } catch (err) {
             console.log(err)
         }
     }
@@ -160,10 +164,11 @@ const statistic:FC = () =>{
     const meanStats = meanStat(stats);
     const exerList = exercises.map((ex, i) => <option key={i} value={ex.exerciseName}>{ex.exerciseName}</option>)
 
-    return(
+    return (
         <div className={'flex flex-col bg-gray-200 items-center justify-items-center min-h-screen p-4'}>
             <div className="flex flex-col bg-white p-8 aspect-square shadow-md relative">
                 <h1 className={'text-2xl'}>Статистика</h1>
+                <StatsTable stats={allStats} getDate={getDate}/>
                 <div className={'flex flex-row ml-5'}>
                     <label htmlFor={'select_exercise'} className={'text-xl mr-5 mt-1'}>
                         Упражнение:
@@ -212,5 +217,44 @@ const statistic:FC = () =>{
         </div>
     );
 }
+interface PropsTable{
+    stats: ResponseStat[],
+    getDate(date: Date): string
+}
+const StatsTable: FC<PropsTable> = (props: PropsTable) => {
+    const sortedStats = props.stats.sort((a,b) => a.username < b.username ? -1 : 1)
+    return (
+        <table className={"table-auto border-collapse mb-10"}>
+            <thead className={"border border-slate-60"}>
+            <tr className={'items-center'}>
+                <th className={"border border-slate-60 border-black"}>Логин</th>
+                <th className={"border border-slate-60 border-black"}>Название упражнения</th>
+                <th className={"border border-slate-60 border-black"}>Средняя скорость</th>
+                <th className={"border border-slate-60 border-black"}>Время выполнения</th>
+                <th className={"border border-slate-60 border-black"}>Количество ошибок</th>
+                <th className={"border border-slate-60 border-black"}>Дата выполнения</th>
+            </tr>
+            </thead>
+            <tbody>
+            {sortedStats.map(s => {
+                return (
+                    <tr className={"border border-black items-center"} key={s.id}>
+                        <td className={"border border-black text-center"}>{s.username}</td>
+                        <td className={"border border-black text-center"}>{s.exerciseName}</td>
+                        <td className={"border border-black text-center"}>{s.meanTime}</td>
+                        <td className={"border border-black text-center"}>{s.durationInSeconds}</td>
+                        <td className={"border border-black text-center"}>{s.errorCount}</td>
+                        <td className={"border border-black text-center"}>{props.getDate(s.exerciseDate)}</td>
+                    </tr>
+                );
+            })}
+            </tbody>
+        </table>
+
+    )
+}
+
+
+
 
 export default statistic;
