@@ -5,15 +5,14 @@ import axios from "axios";
 import {instance} from "../../../api.config.ts";
 
 
-
-const createDifficult:FC = () => {
+const createDifficult: FC = () => {
     const navigate = useNavigate();
     const [title, setTitle] = useState('');
     const [minLen, setMinLen] = useState<number>(0);
     const [maxLen, setMaxLen] = useState<number>(0);
     const [pressTime, setPressTime] = useState<number>(0);
     const [maxMistakes, setMaxMistakes] = useState<number>(0);
-    const[errors, setErrors] = useState<string[]>([]);
+    const [errors, setErrors] = useState<string[]>([]);
 
     const save = async () => {
         const checkboxes: HTMLInputElement[] = document.getElementsByClassName("chkbx");
@@ -32,50 +31,53 @@ const createDifficult:FC = () => {
             zones: listOfChecks
         }
 
-        if(difficult.name.length > 30 || difficult.name.length < 7){
+        if (difficult.name.length > 30 || difficult.name.length < 7) {
             errs.push("Название должно быть от 7 до 30 символов!")
         }
-        if (minLen < 20 || minLen > 150){
+        if (minLen < 20 || minLen > 150) {
             errs.push("Минимальная длина должна быть от 20 символов!")
         }
-        if (maxLen > 150 || maxLen < 20){
+        if (maxLen > 150 || maxLen < 20) {
             errs.push("Максимальная длина должна быть до 150 символов!")
         }
-        if(difficult.toggle_time > 1 || difficult.toggle_time < 0.5){
+        if (difficult.toggle_time > 1 || difficult.toggle_time < 0.5) {
             errs.push("Время нажатия должно быть от 0.5 до 1 сек!")
         }
-        if(difficult.max_errors > 0.2 || difficult.max_errors < 0){
-            errs.push("Максимальное количество ошибок должно быть от 0 до 0.2!")
+        if (difficult.max_errors > 20 || difficult.max_errors < 0) {
+            errs.push("Максимальное количество ошибок должно быть от 0 до 20 %!")
         }
         const allFalse = () => {
             for (let i = 0; i < difficult.zones.length; i++) {
-                if(difficult.zones[i]){
+                if (difficult.zones[i]) {
                     return false;
                 }
             }
             return true;
         }
-        if(allFalse()){
+        if (allFalse()) {
             errs.push("Должна быть выбрана хотя бы одна зона!")
         }
-        setErrors(errs);
+
         console.log(difficult);
-        if(errs.length === 0){
-            try{
-                const response = await axios.post("http://localhost:8080/admin/create-difficult", difficult, { headers: {
+        if (errs.length === 0) {
+            try {
+                const response = await axios.post("http://localhost:8080/admin/create-difficult", difficult, {
+                    headers: {
                         'Authorization': 'Bearer ' + localStorage.getItem('token'),
                         'Content-Type': 'application/json'
-                }})
+                    }
+                })
                 console.log("POST RESPONSE: ", response.data);
                 console.log("POST RESPONSE: ", response.data);
-            }catch(err){
-                console.log("POST ERROR DIFFICULT! ", err);
+                navigate(-1);
+            } catch (err) {
+                console.log(err);
+                errs.push("Название уровня сложности неуникально!")
             }
-            navigate(-1);
-        }
 
         }
-
+        setErrors(errs);
+    }
 
 
     return (
@@ -84,7 +86,7 @@ const createDifficult:FC = () => {
                 <div className="flex-col px-8 pt-6 pb-8 mb-4 space-y-4">
                     <h1 className='text-2xl hh'>Создание уровня сложности</h1>
                     <br/>
-                    {errors.map((e, index) => <p key={index} className={'text-xl text-red-600'} >{e}</p>)}
+                    {errors.map((e, index) => <p key={index} className={'text-xl text-red-600'}>{e}</p>)}
                     <div className="flex items-center mb-4">
                         <label htmlFor="title" className="block mr-4 w-1/3">
                             Название
@@ -173,7 +175,7 @@ const createDifficult:FC = () => {
 // private double max_errors;
 // private List<Boolean> zones;
 
-interface CreateDifficult{
+interface CreateDifficult {
     name: string,
     min_len?: number,
     max_len?: number,
@@ -181,7 +183,6 @@ interface CreateDifficult{
     max_errors?: number,
     zones: boolean[]
 }
-
 
 
 /*async function save(navigate: NavigateFunction, title: string, minLen: number, maxLen: number, pressTime: number, maxMistakes: number) {
