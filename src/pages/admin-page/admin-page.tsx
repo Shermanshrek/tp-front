@@ -10,7 +10,7 @@ const admin: FC = () =>{
         <div className="bg-gray-200 justify-items-center min-h-screen p-4">
             <div className="bg-white p-8 aspect-square shadow-md">
                 <div className="flex flex-col items-center justify-center space-y-4">
-                    <h1 className="text-2xl">Admin page</h1>
+                    <h1 className="text-2xl">Панель администратора</h1>
                     <button onClick={() => navigate('/admin/exercises', {replace: false})}
                             className="bg-gray-300 px-4 py-2 correct-size">Упражнения</button>
                     <button onClick={() => navigate('/admin/create-difficult', {replace: false})}

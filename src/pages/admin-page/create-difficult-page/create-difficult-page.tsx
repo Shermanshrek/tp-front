@@ -66,7 +66,8 @@ const createDifficult:FC = () => {
                         'Authorization': 'Bearer ' + localStorage.getItem('token'),
                         'Content-Type': 'application/json'
                 }})
-                console.log("POST RESPONSE: ", response.data);                console.log("POST RESPONSE: ", response.data);
+                console.log("POST RESPONSE: ", response.data);
+                console.log("POST RESPONSE: ", response.data);
             }catch(err){
                 console.log("POST ERROR DIFFICULT! ", err);
             }

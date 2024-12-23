@@ -22,16 +22,11 @@ const signIn: FC = ()=>{
         console.log("SIGN IN USER",user);
         try {
             const resp = await axios.post("http://localhost:8080/auth/sign-in", user);
-            const token = window.localStorage.getItem("token")
-            let decoded: JwtHeader
-            console.log(token)
-            if(token !== null){
-                decoded = jwtDecode(token)
-            }
-            else{
-                decoded = jwtDecode(resp.data.token)
-                window.localStorage.setItem("token", resp.data.token);
-            }
+            // const token = window.localStorage.getItem("token")
+            // let decoded: JwtHeader
+            // console.log(token)
+            const decoded = jwtDecode(resp.data.token)
+            window.localStorage.setItem("token", resp.data.token);
             console.log("TOKEN SIGN IN: ", decoded);
             if(decoded.role === "ROLE_USER"){
                 const login = decoded.sub

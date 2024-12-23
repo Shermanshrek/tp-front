@@ -4,6 +4,7 @@ import {useLocation, useNavigate} from "react-router-dom";
 import { ResponseExercise } from "../../user-page/exercise-page/exercise-page";
 import { ResponseDifficulty } from "../create-exercise-page/create-exercise-page.tsx";
 import axios from 'axios'
+import {instance} from "../../../api.config.ts";
 
 interface Exercise{
     id: number,
@@ -76,11 +77,11 @@ const adminExercisesPage: FC = () => {
         </li>)
     const deleteExercise = async (id: number) => {
         try {
-            // const response = await axios.delete(`http://localhost:8080/admin/exercises/${id}`);
-            const response = await axios.delete(`http://localhost:8080/admin/exercises/${id}`, { headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
-                    'Content-Type': 'application/json'
-                }})
+            const response = await instance.delete(`/admin/exercises/${id}`);
+            // const response = await axios.delete(`http://localhost:8080/admin/exercises/${id}`, { headers: {
+            //         'Authorization': 'Bearer ' + localStorage.getItem('token'),
+            //         'Content-Type': 'application/json'
+            //     }})
             console.log(response.data);
 
             // Обновляем состояние, убирая удаленное упражнение

@@ -26,6 +26,8 @@ interface Props{
     navigate: NavigateFunction,
     sendStats: () => Promise<void>,
     isActive: boolean,
+    readOnlyArea: boolean,
+    setReadOnlyArea: Dispatch<SetStateAction<boolean>>,
     setIsActive: Dispatch<SetStateAction<boolean>>
 }
 
@@ -34,7 +36,7 @@ const VirtualKeyboard = (props: Props) => {
     const [nextCharIndex, setNextCharIndex] = useState(0);
     const [win, setWin] = useState(false);
     const [mistakes, setMistakes] = useState(false);
-    const [readOnlyArea, setReadOnlyArea] = useState(false);
+
     const handleChange = (e) => {
         setNextCharIndex(e.target.innerText.length); // Обновляем индекс следующего символа
     };
@@ -44,7 +46,7 @@ const VirtualKeyboard = (props: Props) => {
     };
     const handleClosePopup = (func: Dispatch<SetStateAction<boolean>>) => {
         func(false);
-        setReadOnlyArea(false);
+        props.setReadOnlyArea(false);
         props.sendStats();
         props.navigate(-1);
     }
@@ -75,14 +77,14 @@ const VirtualKeyboard = (props: Props) => {
         if (props.symbols > props.exercise_text.length) {
             setWin(true);
             props.setIsActive(false);
-            setReadOnlyArea(true);
-            console.log("READONLY:", readOnlyArea);
+            props.setReadOnlyArea(true);
+            console.log("READONLY:", props.readOnlyArea);
             // Здесь можно сбросить состояние или выполнить другие действия
         } else if (props.mistakes > props.maxErrors) {
             setMistakes(true);
             props.setIsActive(false);
-            setReadOnlyArea(true);
-            console.log("READONLY:", readOnlyArea);
+            props.setReadOnlyArea(true);
+            console.log("READONLY:", props.readOnlyArea);
             // Здесь можно сбросить состояние или выполнить другие действия
         }
         // Добавляем обработчик события нажатия клавиш
@@ -100,7 +102,7 @@ const VirtualKeyboard = (props: Props) => {
            <textarea
                className="border rounded w-full h-32 p-2 mb-4"
                placeholder="Финиш!"
-               readOnly={readOnlyArea}
+               readOnly={props.readOnlyArea}
                value={inputValue}
                onChange={handleChange}
            />
@@ -158,7 +160,7 @@ const doExercise: FC = () => {
     const [mistakes, setMistakes] = useState<number>(0);
     const [meanSpeed, setMeanSpeed] = useState(0);
     const [isActive, setIsActive] = useState<boolean>(true);
-
+    const [readOnlyArea, setReadOnlyArea] = useState(false);
 
     const [showPopup, setShowPopup] = useState(false);
     const [pausePopup, setPausePopup] = useState(false);
@@ -248,12 +250,6 @@ const doExercise: FC = () => {
         return undefined;
 
     }
-    const handleRestartPopup = () => {
-        setReadOnlyArea(false);
-        // sendStats()
-
-    }
-
     const p: Props = {
         visibleKeyBoard: checked,
         maxErrors: ex.errors,
@@ -311,6 +307,8 @@ const doExercise: FC = () => {
                                          sendStats={sendStats}
                                          setIsActive={setIsActive}
                                          isActive={isActive}
+                                         readOnlyArea={readOnlyArea}
+                                         setReadOnlyArea={setReadOnlyArea}
                                          symbols={symbols}/>
                     </div>
                 </div>
