@@ -1,5 +1,5 @@
 import { Navigate, Outlet, Route } from "react-router-dom";
-import authStore from "./store.ts";
+import authStore from "./store.js";
 import { observer } from "mobx-react-lite";
 
 interface Props{

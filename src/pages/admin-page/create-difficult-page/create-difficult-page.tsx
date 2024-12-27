@@ -61,18 +61,28 @@ const createDifficult: FC = () => {
         console.log(difficult);
         if (errs.length === 0) {
             try {
-                const response = await axios.post("http://localhost:8080/admin/create-difficult", difficult, {
+                const response = await axios.post<CreateDifficult>("http://localhost:8080/admin/create-difficult", difficult, {
                     headers: {
                         'Authorization': 'Bearer ' + localStorage.getItem('token'),
                         'Content-Type': 'application/json'
                     }
+                }).catch(function (error) {
+                    if(error.code === "ERR_NETWORK"){
+                        errs.push("Отсутствует подключение к серверу!");
+                        console.log("Отсутствует подключение к серверу!")
+                        console.log(error.response);
+                    }
+                    if(error.code === "ERR_BAD_REQUEST"){
+                        errs.push("Название уровня сложности неуникально!");
+                    }
+                    return Promise.reject(error);
                 })
                 console.log("POST RESPONSE: ", response.data);
                 console.log("POST RESPONSE: ", response.data);
                 navigate(-1);
             } catch (err) {
                 console.log(err);
-                errs.push("Название уровня сложности неуникально!")
+                // errs.push("Название уровня сложности неуникально!")
             }
 
         }
@@ -185,54 +195,5 @@ interface CreateDifficult {
 }
 
 
-/*async function save(navigate: NavigateFunction, title: string, minLen: number, maxLen: number, pressTime: number, maxMistakes: number) {
-    const checkboxes: HTMLInputElement[] = document.getElementsByClassName("chkbx");
-    const listOfChecks: boolean[] = [];
-    const[errors, setErrors] = useState<string[]>([]);
-
-    for (const checkbox of checkboxes) {
-     listOfChecks.push(checkbox.checked);
-    }
-    const difficult: CreateDifficult = {
-        name: title,
-        min_len: minLen,
-        max_len: maxLen,
-        toggle_time: pressTime,
-        max_errors: maxMistakes,
-        zones: listOfChecks
-    }
-
-    else{
-        console.log(difficult);
-        try{
-            const response = await instance.post("/admin/create-difficult", difficult);
-            console.log("POST RESPONSE: ", response.data);
-        }catch(err){
-            console.log("POST ERROR DIFFICULT! ", err);
-        }
-
-        navigate(-1);
-    }
-
-}
-function isValidDifficult(difficult: CreateDifficult){
-    const errors: string[] = [];
-
-    if(difficult.name.length > 30 || difficult.name.length < 7){
-        errors.push("Название должно быть больше 7 и меньше 30 символов!");
-    }
-    if (difficult.min_len === undefined || difficult.max_len === undefined) {
-        errors.push("Минимальная и максимальная длина должны быть указаны.");
-    } else if (difficult.min_len > difficult.max_len) {
-        errors.push("Минимальная длина не может быть больше максимальной.");
-    }
-    if (difficult.toggle_time <= 0) {
-        errors.push("Время нажатия должно быть больше нуля.");
-    }
-    if (difficult.max_errors <= 0) {
-        errors.push("Максимальное количество ошибок должно быть больше нуля.");
-    }
-    return errors;
-}*/
 
 export default createDifficult;

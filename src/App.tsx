@@ -19,7 +19,7 @@ import StatisticPage from "./pages/user-page/statistic-page/statistic-page.tsx";
 import UsersPage from "./pages/admin-page/users-page/users-page.tsx";
 import AdminExercisesPage from "./pages/admin-page/exercises-page/admin-exercises-page.tsx";
 import AdminStatisticPage from "./pages/admin-page/statistic-page/admin-statistic-page.tsx";
-import AuthStore  from "./store.ts";
+import AuthStore  from "./store.js";
 import PrivateRoute from "./privateRoute.tsx";
 import {observer} from "mobx-react-lite";
 

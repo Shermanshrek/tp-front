@@ -9,7 +9,7 @@ export class AuthStore {
         makeAutoObservable(this, {}, { autoBind: true });
     }
 
-    async login(username: string, password: string) {
+    async login(username, password) {
         this.isAuthInProgress = true;
         try {
             const resp = await AuthService.login(username, password);

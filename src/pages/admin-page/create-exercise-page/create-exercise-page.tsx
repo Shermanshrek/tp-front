@@ -161,7 +161,7 @@ const createExercise: FC = () => {
 
         }
         console.log(errs);
-        setErrors(errs);
+
         if (errs.length === 0) {
             console.log("POST EXERCISE: \n", exer);
             try {
@@ -170,13 +170,25 @@ const createExercise: FC = () => {
                         'Authorization': 'Bearer ' + localStorage.getItem('token'),
                         'Content-Type': 'application/json'
                     }
+                }).catch(error => {
+                    if(error.code === "ERR_NETWORK"){
+                        errs.push("Отсутствует подключение к серверу!");
+                        console.log("Отсутствует подключение к серверу!");
+                        console.log(error.response);
+                    }
+                    if(error.code === "ERR_BAD_REQUEST"){
+                        errs.push("Название упражнения неуникально!");
+                    }
+                    return Promise.reject(error);
                 })
                 console.log("POST RESPONSE: ", response.data);
+                navigate(-1);
             } catch (err) {
                 console.log("POST ERROR! ", err);
             }
-            navigate(-1);
+
         }
+        setErrors(errs);
     }
 
 // * Автоматический
