@@ -1,8 +1,6 @@
 import {FC, useEffect} from "react";
 import {Outlet, useLocation, useNavigate, useParams} from "react-router-dom";
 import './user.css'
-import {instance} from "../../api.config.ts";
-import {handleClickHelp} from "../start-page/start-page.tsx";
 
 
 const UserPage: FC = () =>{
@@ -12,6 +10,14 @@ const UserPage: FC = () =>{
     const handleClick = () => {
         window.localStorage.removeItem("token");
         navigate('/');
+    }
+    const handleClickHelpUser = () => {
+        try {
+            // window.location.href="src/Справка/help.html"
+            window.open("/src/Справка/helpUser.html", "_blank")
+        }catch (err){
+            console.error('Ошибка при открытии страницы справки:', err);
+        }
     }
     return(
         <div className="bg-gray-200 justify-items-center min-h-screen p-4">
@@ -27,7 +33,7 @@ const UserPage: FC = () =>{
                         Статистика
                     </button>
                     <button className="bg-gray-300 px-6 py-2" onClick={handleClick}>Выход</button>
-                    <button onClick={handleClickHelp} className="bg-gray-300 px-8 py-2">Справка</button>
+                    <button onClick={handleClickHelpUser} className="bg-gray-300 px-8 py-2">Справка</button>
                 </div>
                 <Outlet/>
             </div>

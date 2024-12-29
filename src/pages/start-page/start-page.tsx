@@ -4,8 +4,7 @@ import {FC} from "react";
 import {useNavigate} from "react-router-dom";
 import './start.css'
 
-
-export function handleClickHelp(){
+function handleClickHelp(){
     try {
         // window.location.href="src/Справка/help.html"
         window.open("/src/Справка/help.html", "_blank")

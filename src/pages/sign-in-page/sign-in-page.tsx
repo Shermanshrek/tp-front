@@ -17,11 +17,25 @@ const signIn: FC = ()=>{
     const [login, setLogin] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [incorrect, setIncorrect] = useState(false);
+    const [error, setError] = useState<string>('');
     const handleClick = async () =>{
         const user:UserSignIn = {username: login, password: password}
         console.log("SIGN IN USER",user);
         try {
-            const resp = await axios.post("http://localhost:8080/auth/sign-in", user);
+            let err: string = '';
+            const resp = await axios.post("http://localhost:8080/auth/sign-in", user)
+                .catch(error => {
+                    if(error.code === "ERR_NETWORK"){
+                        err = "Отсутствует подключение к серверу!";
+                        console.log("Отсутствует подключение к серверу!");
+                        console.log(error.response);
+                    }
+                    if(error.code === "ERR_BAD_REQUEST"){
+                        err = "Неверный логин или пароль!";
+                    }
+                    setError(err);
+                    return Promise.reject(error);
+                });
             // const token = window.localStorage.getItem("token")
             // let decoded: JwtHeader
             // console.log(token)
@@ -45,7 +59,7 @@ const signIn: FC = ()=>{
        <div className="bg-gray-200 justify-items-center min-h-screen p-4">
            <div className="flex flex-col bg-white p-8 aspect-square shadow-md">
                <div className="py-5 ">
-                   {incorrect && <p className={'text-xl text-red-600 mb-3'}>Неверный логин или пароль!</p>}
+                   {incorrect && <p className={'text-xl text-red-600 mb-3'}>{error}</p>}
                    <div className="flex flex-row space-x-5">
                        <p>Логин</p> <input id="login_input" value={login} onChange={(e) => setLogin(e.target.value.trim())} className="border-2 border-black"/>
                    </div>

@@ -53,8 +53,11 @@ const statistic: FC = () => {
         }
         fetchAll();
     }, [])
-    const exercisesList = exercises.map((ex) => {
-        return <option key={ex.id} value={ex.exerciseName}>{ex.exerciseName}</option>
+    const exercisesList = exercises.map((ex, i) => {
+        return <option key={i} value={ex.exerciseName}>{ex.exerciseName}</option>
+    })
+    const exercisesStatList = stat.map((st, i) => {
+        return <option key={i} value={st.exerciseName}>{st.exerciseName}</option>
     })
 
     // Данные для графика
@@ -166,7 +169,6 @@ const statistic: FC = () => {
                     </label>
                     <select id={'select_exercise'}
                             value={selectedExercise}
-
                             onChange={(e) => handleChangeSelect(e, exercises)}
                             className={'border-2 border-black sel'}>
                         <option value={''}></option>

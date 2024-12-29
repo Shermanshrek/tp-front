@@ -1,13 +1,20 @@
 import {FC} from "react";
 import './admin.css'
 import {useNavigate} from "react-router-dom";
-import {handleClickHelp} from "../start-page/start-page.tsx";
+// import {handleClickHelp} from "../start-page/start-page.tsx";
 
 const admin: FC = () =>{
     const navigate = useNavigate();
     const handleClick = () => {
         window.localStorage.removeItem("token");
         navigate('/');
+    }
+    const handleClickHelpAdmin = () => {
+        try {
+            window.open("/src/Справка/helpAdmin.html", "_blank");
+        }catch (err){
+            console.error('Ошибка при открытии страницы справки:', err);
+        }
     }
     return(
         <div className="bg-gray-200 justify-items-center min-h-screen p-4">
@@ -33,7 +40,7 @@ const admin: FC = () =>{
                             className="bg-gray-300 px-4 py-2">Статистика
                     </button>
                     <button className="bg-gray-300 px-6 py-2" onClick={handleClick}>Выход</button>
-                    <button onClick={handleClickHelp} className="bg-gray-300 px-4 py-2">Справка</button>
+                    <button onClick={handleClickHelpAdmin} className="bg-gray-300 px-4 py-2">Справка</button>
                 </div>
             </div>
         </div>
