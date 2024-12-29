@@ -27,6 +27,8 @@ interface Props{
     sendStats: () => Promise<void>,
     isActive: boolean,
     readOnlyArea: boolean,
+    canCountMistakes: boolean,
+    setCanCountMistakes: Dispatch<SetStateAction<boolean>>,
     setReadOnlyArea: Dispatch<SetStateAction<boolean>>,
     setIsActive: Dispatch<SetStateAction<boolean>>
 }
@@ -44,6 +46,7 @@ const VirtualKeyboard = (props: Props) => {
     const getNextChar = () => {
         return inputValue[nextCharIndex] !== undefined ? inputValue[nextCharIndex] : '';
     };
+
     const handleClosePopup = (func: Dispatch<SetStateAction<boolean>>) => {
         func(false);
         props.setReadOnlyArea(false);
@@ -63,19 +66,21 @@ const VirtualKeyboard = (props: Props) => {
             props.onSymbolCountChange((prev: number) => prev + 1);
         }
         else{
-            props.onMistakesCountChange(prev => {
-                const x = prev + 1
-                console.log(x);
-                return x
-            });
+            if(props.canCountMistakes){
+                props.onMistakesCountChange(prev => {
+                    const x = prev + 1
+                    console.log(x);
+                    return x
+                });
+            }
         }
-
     };
 
     useEffect(() => {
 
         if (props.symbols > props.exercise_text.length) {
             setWin(true);
+            props.setCanCountMistakes(false);
             props.setIsActive(false);
             props.setReadOnlyArea(true);
             console.log("READONLY:", props.readOnlyArea);
@@ -83,6 +88,7 @@ const VirtualKeyboard = (props: Props) => {
         } else if (props.mistakes > props.maxErrors) {
             setMistakes(true);
             props.setIsActive(false);
+            props.setCanCountMistakes(false);
             props.setReadOnlyArea(true);
             console.log("READONLY:", props.readOnlyArea);
             // Здесь можно сбросить состояние или выполнить другие действия
@@ -165,6 +171,7 @@ const doExercise: FC = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [pausePopup, setPausePopup] = useState(false);
     const secondsRef = useRef(seconds); // Используем useRef для хранения текущих секунд
+    const [canCountMistakes, setCanCountMistakes] = useState(true);
     // console.log("DO EXERCISE OBJECT: ", ex);
 
     // console.log({login, id_exercise});
@@ -193,6 +200,7 @@ const doExercise: FC = () => {
         if (seconds > ex.doTime) {
             setIsActive(false); // Остановить таймер
             setReadOnlyArea(true);
+            setCanCountMistakes(false);
             setShowPopup(true);
         }
     }, [seconds, ex.doTime]); // Зависимость от seconds и ex.doTime
@@ -201,6 +209,7 @@ const doExercise: FC = () => {
     // Функция для запуска таймера
     const changeTimer = () => {
         setIsActive(!isActive);
+        setCanCountMistakes(!canCountMistakes);
         setPausePopup(!pausePopup);
     };
 
@@ -217,6 +226,7 @@ const doExercise: FC = () => {
     const handleClosePopup2 = () => {
         setIsActive(true);
         setReadOnlyArea(false)
+        setCanCountMistakes(true)
         setPausePopup(false); // Закрыть всплывающее окно
 
 
@@ -308,6 +318,8 @@ const doExercise: FC = () => {
                                          setIsActive={setIsActive}
                                          isActive={isActive}
                                          readOnlyArea={readOnlyArea}
+                                         canCountMistakes={canCountMistakes}
+                                         setCanCountMistakes={setCanCountMistakes}
                                          setReadOnlyArea={setReadOnlyArea}
                                          symbols={symbols}/>
                     </div>
